@@ -27,9 +27,9 @@ app.post('/register', (req, res) => {
 // 회원가입시 필요한 정보들을 client 에서 가져오면
 // 그것을 데이터 베이스에 보내준다. 
 
-    const user = new User(req.body)
-
-    user.save((err, userInfo) => {
+    const user = new User(req.body) // Userjs 동기화 순서 1
+      //User.js 이동  동기화 순서 2 
+    user.save((err, userInfo) => { //Userjs 동기화 순서 3
         if(err) return res.json({success: false, err})
         return res.status(200).json({
             success: true
