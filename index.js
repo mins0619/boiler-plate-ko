@@ -1,18 +1,20 @@
+
 const express = require('express')
 const app = express()
 const port = 3000
-const bodyParser = require('body-parser')
-
-const config = require('./config/key')
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser'); // express 제공 기능 
+const config = require('./config/key');
 const {User} = require("./models/User");
 
+app.use(bodyParser.urlencoded({ extended: false }))
 
-app.use(bodyParser.urlencoded({extended: true})); // 에플리케이션에서 회원가입 정보를 불러오는 역할 
-app.use(bodyParser.json());
+// parse application/json
+app.use(bodyParser.json())
 
+app.use(cookieParser());
 
 const mongoose = require("mongoose");
-const { json } = require('body-parser');
 mongoose.connect(config.mongoURl, {
 useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false
 }).then(() => console.log("mongoDB is Connected.."))
@@ -37,7 +39,39 @@ app.post('/register', (req, res) => {
     })
 })
 
+app.post('/login', (req, res)=> { 
+  // 데이터 베이스에서 요청된 email 찾기
+  User.findOne({ email: req.body.email }, (err,user) => { // 유저 이메일을 요구 but 만약 없다면 오류 출력 
+    if(!user){
+      return res.json({
+        loginSuccess: false,
+        message: "제공된 이메일에 해당하는 유저가 없습니다. "
+      })
+    }
+  
+    // 요청된 email이 데이터 베이스에 있다면 비밀번호가 맞는 비밀번호 인지 확인.
+    user.comparePassword(req.body.password, (err,isMatch) => {
+      if(!isMatch)  // 만약 ismatch가 없다면 ( 비밀번호 틀린 것 )
+      return res.json({loginSuccess: false, message: "비밀번호가 틀렸습니다. " })
+      
+      // 비밀번호까지 맞다면 유저를 위한 토큰을 생성
+      // 비밀번호가 같다면 토큰을 생성해줌 , jsonwebtoken 라이브러리를 다운
+      user.generateToken((err,user) => {
+        if(err) return res.status(400).send(err);
+
+        
+        // 토큰을 쿠키 or 로컬스터리지 등에 저장한다. 지금은 쿠키!
+        res.cookie("x_auth", user.token) 
+        .status(200) // 성공했다는 표시
+        .json({ loginSuccess: true, UserId: user._id }) // 유저 아이디를 보내줌        
+
+
+      })
+    })
+  }) 
+})
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })
+
