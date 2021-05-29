@@ -27,15 +27,13 @@ const userSchema = mongoose.Schema({
         type: Number,
         default: 0,
     },
-    image: {
-        type: String,
-        token: {
-            type: String
-        },
-        tokenExp: {
-            type: Number
-        }
+    image: String,
+    token: {
+        type: String
     },
+    tokenExp: {
+        type: Number
+    }
 })
 
 userSchema.pre('save', function( next ){ // Userjs 동기화 순서 2
@@ -80,7 +78,7 @@ userSchema.methods.generateToken = function(cb){
 
 }
 
-userSchema.statics.findBytoken = function(token, cb) { // 토큰을 복호화 하는 과정
+userSchema.statics.findByToken = function(token, cb) { // 토큰을 복호화 하는 과정
     var user = this;
 
     // user._id + '' = token
