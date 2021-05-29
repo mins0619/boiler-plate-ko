@@ -1,7 +1,6 @@
 
 const express = require('express')
 const app = express()
-const port = 3000
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser'); // express 제공 기능 
 const config = require('./config/key');
@@ -25,6 +24,13 @@ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAn
 app.get('/', (req, res) => {
   res.send('Hello World! 이러면~~~~~~~~~~?')
 })
+
+app.get('/api/hello', (req, res) => { // ∇2 . 클라이언트에서 요청한 정보를 받아옴
+  
+  // ∇3 할일들을 처리함 
+  res.send("안녕하세요~~~") //∇4. 다시 프론트로 전달
+})
+
 
 app.post('/api/users/register', (req, res) => {
 
@@ -104,9 +110,6 @@ app.get('/api/users/logout', auth, (req, res) => {
     })
 })
 
-
-
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
-})
+const port = 5000
+app.listen(port, () => console.log(`hello ${port}!`))
 
