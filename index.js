@@ -6,6 +6,8 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser'); // express 제공 기능 
 const config = require('./config/key');
 const {User} = require("./models/User");
+const {auth} = require("./middleware/auth");
+
 
 app.use(bodyParser.urlencoded({ extended: false }))
 
@@ -24,7 +26,7 @@ app.get('/', (req, res) => {
   res.send('Hello World! 이러면~~~~~~~~~~?')
 })
 
-app.post('/register', (req, res) => {
+app.post('/api/users/register', (req, res) => {
 
 // 회원가입시 필요한 정보들을 client 에서 가져오면
 // 그것을 데이터 베이스에 보내준다. 
@@ -39,7 +41,7 @@ app.post('/register', (req, res) => {
     })
 })
 
-app.post('/login', (req, res)=> { 
+app.post('/api/users/login', (req, res)=> { 
   // 데이터 베이스에서 요청된 email 찾기
   User.findOne({ email: req.body.email }, (err,user) => { // 유저 이메일을 요구 but 만약 없다면 오류 출력 
     if(!user){
@@ -69,6 +71,25 @@ app.post('/login', (req, res)=> {
       })
     })
   }) 
+})
+
+app.get('/api/users/auth', auth ,(req,res) => { // 미드웨어는 엔트포인트에서 req를 받고 cb 하기 전에 중간에서 무언가를 하는 애
+
+    // role 1 어드민 role 2 특정부서 어드민
+    // role 0  일반유저 , 0이 아니면 관리자 
+    // 여기까지 미들웨어를 통과해 왓다는 이야기는 authentication이 ture 라는 말.
+    res.status(200).json ({
+      _id: req.user._id,
+      isAdmin: req.user.role === 0 ? false : true,
+      isAuth: true,
+      email: req.user.email,
+      name: req.user.name,
+      lastname: req.user.lastname,
+      role: req.user.role,
+      image: req.user.image
+    })
+
+
 })
 
 app.listen(port, () => {
